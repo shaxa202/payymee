@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Кошелёк</title>
+<style>
+  :root{--bg:#eef1f5;--ink:#0f1b2d;--muted:#8791a3;--main:#06b6c9;--dark:#0b2a4a;--ok:#16a34a;--err:#e5484d}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+  body{background:#dfe4ea;color:var(--ink);display:flex;justify-content:center}
+  .app{width:100%;max-width:430px;min-height:100vh;background:var(--bg);position:relative;overflow:hidden}
+  .screen{display:none;min-height:100vh}.screen.active{display:block}
+  .status{display:flex;justify-content:space-between;padding:12px 22px 0;font-size:13px;font-weight:600;color:#fff}
+  .hero{background:linear-gradient(160deg,#0b2a4a 0%,#0f4c75 55%,#06b6c9 130%);color:#fff;padding-bottom:78px;border-radius:0 0 30px 30px}
+  .bar{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 0}
+  .logo{font-weight:800;font-size:22px;letter-spacing:-.5px}.logo b{color:var(--main)}
+  .ava{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .bal{padding:26px 22px 0}
+  .bal small{opacity:.7;font-size:13px}
+  .bal h1{font-size:36px;margin-top:6px;letter-spacing:-1px;display:flex;align-items:center;gap:10px}
+  .eye{font-size:18px;opacity:.7;cursor:pointer;background:none;border:0;color:#fff}
+  .wrap{padding:0 16px;margin-top:-52px}
+  .cc{height:170px;border-radius:20px;padding:18px 20px;color:#fff;background:linear-gradient(135deg,#1b1f3b,#3b2f77 60%,#5b3fa5);box-shadow:0 14px 28px rgba(27,31,59,.35);position:relative;margin-bottom:16px}
+  .cc .chip{width:38px;height:28px;border-radius:6px;background:linear-gradient(135deg,#f5d77a,#c9a227);margin-top:10px}
+  .cc .num{font-size:19px;letter-spacing:2.5px;margin-top:20px}
+  .cc .meta{display:flex;justify-content:space-between;font-size:12px;opacity:.8;margin-top:14px}
+  .cc .brand{position:absolute;right:20px;top:18px;font-weight:800;font-style:italic;font-size:18px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .q{background:#fff;border:0;border-radius:16px;padding:14px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;box-shadow:0 2px 8px rgba(15,27,45,.06)}
+  .q i{font-style:normal;width:40px;height:40px;border-radius:13px;background:#e3f8fb;display:flex;align-items:center;justify-content:center;font-size:19px}
+  .q:active{transform:scale(.96)}
+  .card{background:#fff;border-radius:20px;padding:16px 16px 6px;box-shadow:0 2px 8px rgba(15,27,45,.06);margin-bottom:16px}
+  .card h2{font-size:16px;margin-bottom:6px}
+  .tx{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0f2f5}
+  .tx:last-child{border:0}
+  .ic{width:42px;height:42px;border-radius:50%;background:#eef1f5;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+  .tx .t{flex:1;font-size:14px;font-weight:600}.tx .t small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:2px}
+  .tx .a{font-weight:700;font-size:14px}.minus{color:var(--ink)}.plus{color:var(--ok)}
+  .nav{position:sticky;bottom:0;display:flex;background:#fff;border-top:1px solid #e6e9ee;padding:8px 0 14px}
+  .nav div{flex:1;text-align:center;font-size:11px;color:var(--muted);font-weight:600}.nav div.on{color:var(--main)}.nav span{display:block;font-size:20px}
+  .h{display:flex;align-items:center;gap:8px;padding:16px 12px;background:#fff;border-bottom:1px solid #e6e9ee}
+  .h button{border:0;background:none;font-size:26px;cursor:pointer;color:var(--ink);padding:0 8px}.h h2{font-size:18px}
+  label{font-size:13px;color:var(--muted);display:block;margin:14px 0 6px;font-weight:600}
+  input{width:100%;border:1.5px solid #e1e5ec;border-radius:14px;padding:15px;font-size:18px;background:#fff;color:var(--ink);font-weight:600}
+  input:focus{outline:none;border-color:var(--main)}
+  .recv{display:none;align-items:center;gap:12px;background:#e9fbf3;border-radius:14px;padding:12px;margin-top:10px}
+  .recv.on{display:flex}
+  .recv .ic{background:var(--ok);color:#fff;font-weight:700;font-size:14px}
+  .recv b{font-size:14px;display:block}.recv small{color:var(--muted);font-size:12px}
+  .err{color:var(--err);font-size:13px;margin-top:8px;min-height:18px}
+  .btn{border:0;border-radius:16px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;background:var(--main);color:#fff;width:100%;box-shadow:0 8px 18px rgba(6,182,201,.3)}
+  .btn:active{transform:scale(.98)}
+  .loader{position:fixed;inset:0;background:rgba(255,255,255,.92);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:9;font-weight:600}
+  .loader.on{display:flex}
+  .spin{width:46px;height:46px;border-radius:50%;border:4px solid #d9eef2;border-top-color:var(--main);animation:r .8s linear infinite}
+  @keyframes r{to{transform:rotate(360deg)}}
+  .rwrap{padding:26px 16px}
+  .ticket{background:#fff;border-radius:22px;padding:26px 20px 22px;text-align:center;box-shadow:0 10px 26px rgba(15,27,45,.1);position:relative}
+  .tick{width:66px;height:66px;border-radius:50%;background:var(--ok);color:#fff;font-size:36px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;animation:pop .45s ease}
+  @keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+  .ticket h2{font-size:18px}.sum{font-size:32px;font-weight:800;margin:6px 0 18px;letter-spacing:-.5px}
+  .row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px dashed #dfe3ea;font-size:14px}
+  .row span:first-child{color:var(--muted)}.row span:last-child{font-weight:600;text-align:right}
+  .foot{font-size:10px;color:#c3c9d4;margin-top:16px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .btn.alt{background:#e3f8fb;color:#0a7a8a;box-shadow:none}
+  @media (prefers-reduced-motion:reduce){.tick,.spin{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section class="screen active" id="home">
+    <div class="hero">
+      <div class="status"><span id="clock">9:41</span><span>5G ▂▄▆ 87%</span></div>
+      <div class="bar"><div class="logo">my<b>pay</b></div><div class="ava">ТШ</div></div>
+      <div class="bal"><small>Основной счёт</small>
+        <h1><span id="balance">0 сум</span><button class="eye" id="eye" aria-label="Скрыть баланс">👁</button></h1></div>
+    </div>
+    <div class="wrap">
+      <div class="grid">
+        <button class="q" id="goSend"><i>↗</i>Перевод</button>
+        <button class="q"><i>＋</i>Пополнить</button>
+        <button class="q"><i>▦</i>QR</button>
+        <button class="q" id="goHist"><i>≡</i>История</button>
+      </div>
+      <div class="card"><h2>Последние операции</h2><div id="lastList"></div></div>
+    </div>
+    <div class="nav"><div class="on"><span>⌂</span>Главная</div><div><span>▤</span>Платежи</div><div><span>◔</span>История</div><div><span>☰</span>Ещё</div></div>
+  </section>
+
+  <section class="screen" id="send">
+    <div class="h"><button data-back aria-label="Назад">←</button><h2>Перевод на карту</h2></div>
+    <div class="wrap" style="margin-top:14px"><div class="card" style="padding-bottom:16px">
+      <label for="card">Номер карты получателя</label>
+      <input id="card" inputmode="numeric" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="off">
+      <div class="recv" id="recv"><div class="ic">ТШ</div><div><b>Tishayev Shamsiddin</b><small id="recvCard"></small></div></div>
+      <label for="amount">Сумма</label>
+      <input id="amount" inputmode="numeric" placeholder="0 сум" autocomplete="off">
+      <div class="err" id="err"></div>
+      <button class="btn" id="doSend">Отправить</button>
+    </div></div>
+  </section>
+
+  <section class="screen" id="receipt">
+    <div class="rwrap">
+      <div class="ticket">
+        <div class="tick">✓</div>
+        <h2>Перевод выполнен</h2>
+        <div class="sum" id="rSum"></div>
+        <div class="row"><span>Получатель</span><span>Tishayev Shamsiddin</span></div>
+        <div class="row"><span>Карта получателя</span><span id="rCard"></span></div>
+        <div class="row"><span>Отправитель</span><span>•••• 4821</span></div>
+        <div class="row"><span>Дата и время</span><span id="rDate"></span></div>
+        <div class="row"><span>Комиссия</span><span>0 сум</span></div>
+        <div class="row"><span>№ транзакции</span><span id="rId"></span></div>
+        <div class="row" style="border:0"><span>Статус</span><span style="color:var(--ok)">Выполнено</span></div>
+        <div class="foot">Учебная демонстрация, не является платёжным документом</div>
+      </div>
+      <div class="two"><button class="btn alt" onclick="window.print()">Сохранить</button><button class="btn" id="toHome">Готово</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="history">
+    <div class="h"><button data-back aria-label="Назад">←</button><h2>История</h2></div>
+    <div class="wrap" style="margin-top:14px"><div class="card" id="histList"></div></div>
+  </section>
+
+  <div class="loader" id="loader"><div class="spin"></div>Отправляем перевод…</div>
+</div>
+
+<script>
+  let balance = 23013401, hidden = false;
+  let history = [
+    {t:"Пополнение",s:"Карта 8600 ••3317",a:500000,d:"Вчера, 18:42",i:"＋"},
+    {t:"Korzinka",s:"Оплата",a:-187500,d:"Вчера, 14:05",i:"🛒"},
+    {t:"Мадина Юсупова",s:"Перевод",a:-300000,d:"2 дня назад",i:"↗"},
+    {t:"Зарплата",s:"Поступление",a:4200000,d:"3 дня назад",i:"＋"}
+  ];
+  const $ = id => document.getElementById(id);
+  const num = n => Math.abs(n).toLocaleString("en-US");
+  const fmt = n => num(n) + " сум";
+  const show = id => { document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); window.scrollTo(0,0); };
+  function tx(list){return list.map(x=>`<div class="tx"><div class="ic">${x.i}</div><div class="t">${x.t}<small>${x.s} · ${x.d}</small></div><div class="a ${x.a<0?'minus':'plus'}">${x.a<0?'−':'+'}${num(x.a)}</div></div>`).join("")}
+  function render(){ $("balance").textContent = hidden ? "••• ••• сум" : fmt(balance); $("lastList").innerHTML = tx(history.slice(0,4)); $("histList").innerHTML = tx(history); }
+  function clock(){ $("clock").textContent = new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}); }
+  setInterval(clock,1000); clock();
+  $("eye").onclick = ()=>{ hidden=!hidden; render(); };
+
+  $("card").addEventListener("input", e=>{
+    const d = e.target.value.replace(/\D/g,"").slice(0,16);
+    e.target.value = d.replace(/(.{4})/g,"$1 ").trim();
+    $("recv").classList.toggle("on", d.length===16);
+    $("recvCard").textContent = d.length===16 ? "•••• " + d.slice(-4) : "";
+  });
+  $("amount").addEventListener("input", e=>{
+    const d = e.target.value.replace(/\D/g,"");
+    e.target.value = d ? Number(d).toLocaleString("en-US") : "";
+  });
+  $("goSend").onclick = ()=>{ $("err").textContent=""; show("send"); };
+  $("goHist").onclick = ()=>show("history");
+  $("toHome").onclick = ()=>show("home");
+  document.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>show("home"));
+
+  $("doSend").onclick = ()=>{
+    const digits = $("card").value.replace(/\D/g,"");
+    const amount = Number($("amount").value.replace(/\D/g,""));
+    if(digits.length!==16){ $("err").textContent="Введите 16 цифр номера карты"; return; }
+    if(!amount){ $("err").textContent="Введите сумму"; return; }
+    if(amount>balance){ $("err").textContent="Недостаточно средств на счёте"; return; }
+    $("loader").classList.add("on");
+    setTimeout(()=>{
+      balance -= amount;
+      const now = new Date();
+      history.unshift({t:"Tishayev Shamsiddin",s:"Перевод",a:-amount,d:"Сегодня, "+now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}),i:"↗"});
+      $("rSum").textContent = fmt(amount);
+      $("rCard").textContent = digits.replace(/(.{4})(.{4})(.{4})(.{4})/,"$1 **** **** $4");
+      $("rDate").textContent = now.toLocaleString("ru-RU");
+      $("rId").textContent = String(Math.floor(Math.random()*9e9)+1e9);
+      $("card").value=""; $("amount").value=""; $("recv").classList.remove("on");
+      render(); $("loader").classList.remove("on"); show("receipt");
+    }, 1800);
+  };
+  render();
+</script>
+</body>
+</html>
